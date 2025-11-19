@@ -12,3 +12,11 @@ docs/
 
 # Dotenv file
 .env
+
+# Node.js
+node_modules/
+dist/
+build/
+*.log
+.env.*
+!.env.example

@@ -1,11 +1,11 @@
-# Implementation Plan: Gasless Airdrop Claim
+# Implementation Plan: Gasless Airdrop Claim (On-Chain Signature Verification)
 
 **Branch**: `001-airdrop-claim-gasless` | **Date**: 2025-11-19 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/Users/xrj/Documents/github/merkle-airdrop/specs/001-airdrop-claim-gasless/spec.md`
 
 ## Summary
 
-This plan outlines the technical implementation for a gasless airdrop claim feature. Whitelisted users will sign an EIP-712 message to authorize a claim, which a backend relayer will process and submit to an on-chain contract, paying the gas fees on the user's behalf. The implementation will use Solidity with the Foundry framework for the on-chain components and a Node.js backend for the off-chain relayer. A helper script for Merkle tree generation will also be provided.
+This plan outlines the technical implementation for a gasless airdrop claim feature where the **on-chain contract is responsible for verifying the user's EIP-712 signature**. A backend relayer will simply forward the user's request (including the signature) to the smart contract and pay the associated gas fees. The implementation will use Solidity with the Foundry framework for the on-chain components and a Node.js backend for the off-chain relayer.
 
 ## Technical Context
 
@@ -13,12 +13,14 @@ This plan outlines the technical implementation for a gasless airdrop claim feat
 *   **Language/Version**: Solidity 0.8.20
 *   **Framework**: Foundry
 *   **Primary Dependencies**: OpenZeppelin Contracts
-*   **Key Contracts**: `MerkleAirdrop.sol`, `AirdropToken.sol` (the ERC-20 token for the airdrop)
+*   **Key Contracts**: 
+    *   `MerkleAirdrop.sol`: Will contain logic for Merkle proof validation and EIP-712 signature verification.
+    *   `AirdropToken.sol`: The ERC-20 token for the airdrop.
 
 **Off-Chain (Backend & Tooling)**
-*   **Backend Relayer**: Node.js/TypeScript with Ethers.js, Express/Fastify
-*   **Merkle Tree Script**: JavaScript/TypeScript with `merkletreejs`
-*   **Testing**: Foundry (on-chain), Jest/Vitest (off-chain)
+*   **Backend Relayer**: Node.js/TypeScript with Ethers.js, Express/Fastify. Its primary role is to relay valid requests to the blockchain, not to verify signatures.
+*   **Merkle Tree Script**: JavaScript/TypeScript with `merkletreejs`.
+*   **Testing**: Foundry (on-chain), Jest/Vitest (off-chain).
 
 **Frontend**
 *   **To be determined via research**. Popular options include React/Next.js with Wagmi/Viem.
@@ -38,30 +40,28 @@ This phase focuses on resolving unknowns before design and implementation. The f
 
 *   **Research Tasks**:
     1.  **OpenZeppelin Version**: Determine the latest stable version of OpenZeppelin Contracts and the recommended method for integration with Foundry (`forge install`).
-    2.  **Backend Relayer Stack**: Research and document best practices for building a secure gas-relayer using Node.js. This includes nonce management, transaction error handling, and private key security.
-    3.  **Frontend Stack**: Research and recommend a modern, open-source frontend stack for DApp development. The output should compare 2-3 popular choices (e.g., Next.js + Wagmi, Vite + Viem) and justify a recommendation.
-    4.  **EIP-712 Structure**: Define and document the precise JSON structure for the EIP-712 typed data that users will sign. This is critical for frontend-backend-contract interoperability.
-    5.  **Merkle Tree Generation**: Validate the `merkletreejs` library and create a proof-of-concept script that takes a JSON list of users/amounts and outputs a Merkle root and proofs for each user.
+    2.  **Backend Relayer Stack**: Research best practices for a secure, non-validating gas-relayer using Node.js. Focus on nonce management, error handling, and security.
+    3.  **Frontend Stack**: Research and recommend a modern, open-source frontend stack for DApp development.
+    4.  **EIP-712 On-Chain Verification**: Define and document the precise JSON structure for the EIP-712 typed data (which does NOT include the Merkle proof) and the corresponding Solidity struct and hashing mechanism required for on-chain verification.
+    5.  **Merkle Tree Generation**: Validate the `merkletreejs` library and create a proof-of-concept script.
 
 ## Phase 1: Design & Contracts
 
 Based on the research, this phase will produce the core design artifacts.
 
-*   **`data-model.md`**: Document the on-chain and off-chain data structures.
-    *   **On-Chain**: `MerkleAirdrop.sol` state variables (merkleRoot, token, hasClaimed mapping).
-    *   **Off-Chain**: The structure of the whitelist JSON file (e.g., `[{ "address": "0x...", "amount": "1000000000000000000" }]`).
+*   **`data-model.md`**: Document on-chain and off-chain data structures. (No significant change from previous plan).
 *   **API Contracts (`/contracts/`)**: An OpenAPI specification for the backend relayer.
     *   **Endpoint**: `POST /claim`
-    *   **Request Body**: `{ "userAddress": "string", "signature": "string" }`
+    *   **Request Body**: `{ "userAddress": "string", "amount": "string", "signature": "string", "merkleProof": ["string"] }`
     *   **Success Response**: `{ "transactionHash": "string" }`
-    *   **Error Responses**: Error codes for invalid signature, not whitelisted, already claimed, etc.
-*   **`quickstart.md`**: A guide for developers on setting up the repository, installing dependencies (Foundry, Node.js), and running tests.
-*   **Agent Context Update**: Run `.specify/scripts/bash/update-agent-context.sh gemini` to inform the agent of the selected technologies.
+    *   **Error Responses**: Simplified error responses, as most validation is now on-chain.
+*   **`quickstart.md`**: A guide for developers on setting up and running the project.
 
 ## Project Structure
 
-### Documentation (this feature)
+(No changes from the previously corrected structure)
 
+### Documentation (this feature)
 ```text
 specs/001-airdrop-claim-gasless/
 ├── plan.md              # This file
@@ -72,30 +72,22 @@ specs/001-airdrop-claim-gasless/
 ```
 
 ### Source Code (repository root)
-
 ```text
-# Using a monorepo structure to separate concerns
-src/                 # Solidity smart contracts
-├── MerkleAirdrop.sol
+src/
+├── tokens/
+│   └── AirdropToken.sol
+└── MerkleAirdrop.sol
 test/
-├── MerkleAirdrop.t.sol
+└── MerkleAirdrop.t.sol
 script/
 └── MerkleAirdrop.s.sol
-
 backend/
-├── src/
-│   ├── api/             # Express/Fastify endpoint handlers
-│   ├── services/        # Business logic (signature validation, tx submission)
-│   └── utils/
-└── test/
-
+└── ...
 scripts/
-└── generate-merkle-tree.js # Merkle tree generation helper script
-
-# Frontend will be in a separate 'frontend/' directory once decided
+└── generate-merkle-tree.js
 ```
 
-**Structure Decision**: A monorepo-like structure is chosen to clearly separate the on-chain (`contracts`), off-chain (`backend`), and tooling (`scripts`) components. This aligns with the "high cohesion, low coupling" principle from the constitution.
+**Structure Decision**: A monorepo-like structure is chosen to clearly separate the on-chain, off-chain, and tooling components, adhering to Foundry conventions.
 
 ## Complexity Tracking
 No violations to justify.

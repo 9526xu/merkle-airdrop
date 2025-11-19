@@ -61,7 +61,7 @@ A user who has already successfully claimed their airdrop attempts to claim it a
 ### Edge Cases
 
 -   What happens if the backend relayer wallet runs out of gas? The system should fail gracefully, log the error, and be able to retry the transaction later.
--   How does the system handle an invalid EIP-712 signature? The backend must reject the request with a clear error.
+-   How does the system handle an invalid EIP-712 signature? The on-chain contract MUST revert the transaction with a clear error.
 -   What happens if the blockchain network is heavily congested? The system should handle potentially long transaction confirmation times.
 
 ## Requirements *(mandatory)*
@@ -69,15 +69,25 @@ A user who has already successfully claimed their airdrop attempts to claim it a
 ### Functional Requirements
 
 -   **FR-001**: The system MUST provide a mechanism for a user to generate an EIP-712 compliant signature to authorize the airdrop claim.
+
 -   **FR-002**: A backend service MUST expose an endpoint to receive the user's address and the corresponding EIP-712 signature.
--   **FR-003**: The backend service MUST cryptographically verify that the provided signature corresponds to the user's address and the intended claim action.
+
+-   **FR-003**: The on-chain contract MUST cryptographically verify the EIP-712 signature provided by the user against the `_claimer` address and the intended claim parameters (amount, token address, etc.).
+
 -   **FR-004**: The backend service MUST verify that the user's address is included in the airdrop whitelist by generating and validating a Merkle proof.
+
 -   **FR-005**: The backend service MUST check its records or query the blockchain to ensure the user has not already claimed the airdrop.
--   **FR-006**: The backend service MUST, upon successful validation, construct and submit a transaction to the on-chain contract to execute the claim on the user's behalf.
+
+-   **FR-006**: The backend service MUST, upon successful *backend* validation (e.g., whitelist, duplicate claim), construct and submit a transaction to the on-chain contract to execute the claim on the user's behalf.
+
 -   **FR-007**: The on-chain contract MUST have a secure claim function that can only be executed by an authorized backend relayer address.
--   **FR-008**: The on-chain claim function MUST accept the user's address, the token amount, and a Merkle proof as arguments.
+
+-   **FR-008**: The on-chain claim function MUST accept the user's address, the token amount, the EIP-712 signature, and a Merkle proof as arguments.
+
 -   **FR-009**: The on-chain contract MUST validate the provided Merkle proof against its stored Merkle root.
+
 -   **FR-010**: The on-chain contract MUST track claimed addresses and reject transactions for addresses that have already claimed.
+
 -   **FR-011**: Upon successful validation, the on-chain contract MUST transfer the specified amount of airdrop tokens to the user's address.
 
 ### Key Entities

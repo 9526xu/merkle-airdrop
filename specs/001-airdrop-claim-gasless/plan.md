@@ -13,7 +13,7 @@ This plan outlines the technical implementation for a gasless airdrop claim feat
 *   **Language/Version**: Solidity 0.8.20
 *   **Framework**: Foundry
 *   **Primary Dependencies**: OpenZeppelin Contracts
-*   **Key Contracts**: `MerkleAirdrop.sol`, `IERC20.sol`
+*   **Key Contracts**: `MerkleAirdrop.sol`, `AirdropToken.sol` (the ERC-20 token for the airdrop)
 
 **Off-Chain (Backend & Tooling)**
 *   **Backend Relayer**: Node.js/TypeScript with Ethers.js, Express/Fastify

@@ -33,9 +33,9 @@
 
 **Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented.
 
-- [ ] T008 Create the basic `MerkleAirdrop.sol` contract file in `src/MerkleAirdrop.sol` with initial state variables (`merkleRoot`, `token`).
-- [ ] T009 Create a mock ERC20 token contract `src/mocks/MockToken.sol` for testing purposes.
-- [ ] T010 Create the initial test file `test/MerkleAirdrop.t.sol` with basic setup (deploying contracts).
+- [ ] T008 Create the directory `src/tokens/` and the basic MerkleAirdrop.sol contract file in `src/MerkleAirdrop.sol` with initial state variables (merkleRoot, airdropToken address).
+- [ ] T009 Create a deployable ERC20 token contract `src/tokens/AirdropToken.sol` for the airdrop.
+- [ ] T010 Create the initial test file `test/MerkleAirdrop.t.sol` with basic setup (deploying MerkleAirdrop.sol and AirdropToken.sol).
 - [ ] T011 Implement the Merkle tree generation script `scripts/generate-merkle-tree.js` to process a `whitelist.json` file.
 - [ ] T012 Create a basic HTTP server setup in `backend/src/index.ts`.
 

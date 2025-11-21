@@ -51,9 +51,9 @@
 ### Implementation for User Story 1
 
 - [x] T014 [US1] In `src/MerkleAirdrop.sol`, implement the `claim` function, including EIP-712 signature verification (using `ecrecover`) and Merkle proof validation.
-- [ ] T015 [US1] In `backend/src/services/claimService.ts`, implement the logic to relay the user's request (address, amount, proof, signature) to the smart contract.
-- [ ] T016 [US1] In `backend/src/api/claim.ts`, create the `POST /claim` endpoint that accepts all necessary data from the user to pass to the service.
-- [ ] T017 [US1] In `backend/test/claim.test.ts`, write an integration test for a successful claim, passing the full payload to the `/claim` endpoint.
+- [x] T015 [US1] In `backend/src/services/claimService.ts`, implement the logic to relay the user's request (address, amount, proof, signature) to the smart contract.
+- [x] T016 [US1] In `backend/src/api/claim.ts`, create the `POST /claim` endpoint that accepts all necessary data from the user to pass to the service.
+- [x] T017 [US1] In `backend/test/claim.test.ts`, write an integration test for a successful claim, passing the full payload to the `/claim` endpoint.
 
 ---
 

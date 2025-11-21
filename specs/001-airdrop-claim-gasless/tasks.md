@@ -16,12 +16,12 @@
 
 **Purpose**: Project initialization and dependency setup.
 
-- [ ] T001 [P] Initialize a Node.js project in the `backend/` directory by running `npm init -y`.
-- [ ] T002 [P] Create the directory structure `backend/src/api`, `backend/src/services`, `backend/src/utils`, and `backend/test`.
-- [ ] T003 [P] Create the directory `scripts/`.
-- [ ] T004 Install backend dependencies in the `backend/` directory: `npm install typescript ts-node express ethers@^5 merkletreejs keccak256`.
-- [ ] T005 Install backend development dependencies: `npm install -D @types/node @types/express jest ts-jest`.
-- [ ] T006 Configure TypeScript by creating a `backend/tsconfig.json` file.
+- [x] T001 [P] Initialize a Node.js project in the `backend/` directory by running `npm init -y`.
+- [x] T002 [P] Create the directory structure `backend/src/api`, `backend/src/services`, `backend/src/utils`, and `backend/test`.
+- [x] T003 [P] Create the directory `backend/scripts/`.
+- [x] T004 Install backend dependencies in the `backend/` directory: `npm install typescript ts-node express ethers@^5 merkletreejs keccak256`.
+- [x] T005 Install backend development dependencies: `npm install -D @types/node @types/express jest ts-jest`.
+- [x] T006 Configure TypeScript by creating a `backend/tsconfig.json` file.
 - [x] T007 Install smart contract dependencies: `forge install OpenZeppelin/openzeppelin-contracts`.
 
 ---
@@ -33,8 +33,8 @@
 - [x] T008 Create the directory `src/tokens/` and the basic MerkleAirdrop.sol contract file in `src/MerkleAirdrop.sol` inheriting from `Ownable` and `EIP712`.
 - [x] T009 Create a deployable ERC20 token contract `src/tokens/AirdropToken.sol` for the airdrop.
 - [x] T010 Create the initial test file `test/MerkleAirdrop.t.sol` with basic setup for deploying contracts and hashing the EIP712 struct.
-- [ ] T011 Implement the Merkle tree generation script `scripts/generate-merkle-tree.js` to process a `whitelist.json` file.
-- [ ] T012 Create a basic HTTP server setup in `backend/src/index.ts`.
+- [x] T011 Implement the Merkle tree generation script `backend/scripts/generate-merkle-tree.js` to process a `whitelist.json` file.
+- [x] T012 Create a basic HTTP server setup in `backend/src/index.ts`.
 
 ---
 

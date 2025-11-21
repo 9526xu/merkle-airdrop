@@ -65,12 +65,12 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T018 [P] [US2] In `test/MerkleAirdrop.t.sol`, write a test `test_claim_fails_for_non_whitelisted_user` that expects a revert due to invalid Merkle proof.
+- [x] T018 [P] [US2] In `test/MerkleAirdrop.t.sol`, write a test `test_claim_fails_for_non_whitelisted_user` that expects a revert due to invalid Merkle proof.
 
 ### Implementation for User Story 2
 
-- [ ] T019 [US2] Ensure the `claim` function in `src/MerkleAirdrop.sol` properly reverts for invalid Merkle proofs (verify T014 implementation).
-- [ ] T020 [US2] In `backend/src/services/claimService.ts`, add a preliminary check to see if a user is in the whitelist to avoid sending unnecessary transactions.
+- [x] T019 [US2] Ensure the `claim` function in `src/MerkleAirdrop.sol` properly reverts for invalid Merkle proofs (verify T014 implementation).
+- [x] T020 [US2] In `backend/src/services/claimService.ts`, add a preliminary check to see if a user is in the whitelist to avoid sending unnecessary transactions.
 
 ---
 
@@ -82,18 +82,18 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T021 [P] [US3] In `test/MerkleAirdrop.t.sol`, write a test `test_claim_fails_on_duplicate_claim` that expects a revert.
+- [x] T021 [P] [US3] In `test/MerkleAirdrop.t.sol`, write a test `test_claim_fails_on_duplicate_claim` that expects a revert.
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] In `src/MerkleAirdrop.sol`, add and use a `mapping(address => bool) public hasClaimed` to track and block duplicate claims.
-- [ ] T023 [US3] In `backend/src/services/claimService.ts`, add a preliminary check to see if a user has already claimed to avoid sending unnecessary transactions.
+- [x] T022 [US3] In `src/MerkleAirdrop.sol`, add and use a `mapping(address => bool) public hasClaimed` to track and block duplicate claims.
+- [x] T023 [US3] In `backend/src/services/claimService.ts`, add a preliminary check to see if a user has already claimed to avoid sending unnecessary transactions.
 
 ---
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T024 [P] Add comprehensive, user-friendly error handling to the `backend/src/api/claim.ts` endpoint.
-- [ ] T025 [P] Implement structured logging in the backend service.
-- [ ] T026 Implement secure management of the relayer private key in the backend (e.g., using environment variables and a `.env` file).
-- [ ] T027 Write the project's final `README.md` file, explaining setup and usage.
+- [x] T024 [P] Add comprehensive, user-friendly error handling to the `backend/src/api/claim.ts` endpoint.
+- [x] T025 [P] Implement structured logging in the backend service.
+- [x] T026 Implement secure management of the relayer private key in the backend (e.g., using environment variables and a `.env` file).
+- [x] T027 Write the project's final `README.md` file, explaining setup and usage.

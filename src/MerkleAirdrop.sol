@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity ^0.8.24;
 
-import "openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol"; // New import for SafeERC20
-import "openzeppelin/contracts/utils/Address.sol"; // New import for SafeERC20
-import "openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import "openzeppelin/contracts/access/Ownable.sol";
-import "openzeppelin/contracts/utils/cryptography/EIP712.sol"; // New import
-import "openzeppelin/contracts/utils/cryptography/ECDSA.sol"; // New import for ECDSA.recover
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol"; // New import for SafeERC20
+import "@openzeppelin/contracts/utils/Address.sol"; // New import for SafeERC20
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol"; // New import for MerkleProof
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/cryptography/EIP712.sol"; // New import for EIP712
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol"; // New import for ECDSA.recover
 
 contract MerkleAirdrop is Ownable, EIP712 {
     using SafeERC20 for IERC20; // Use SafeERC20 for IERC20
@@ -54,21 +54,18 @@ contract MerkleAirdrop is Ownable, EIP712 {
             revert AlreadyClaimed();
         }
 
-        // 2. Verify the EIP-712 signature
-        bytes32 structHash = keccak256(
-            abi.encode(CLAIM_TYPEHASH, _claimer, _amount)
-        );
-        bytes32 digest = _hashTypedDataV4(structHash);
-
         // By using OpenZeppelin's ECDSA.tryRecover, we prevent signature malleability attacks.
         // The library ensures that the 's' value of the signature is in the lower half of the curve order,
         // accepting only canonical signatures and rejecting malleable ones.
-        (bool success, address signer) = ECDSA.tryRecover(digest, _signature);
+        (address recovered, ECDSA.RecoverError err, ) = ECDSA.tryRecover(
+            getMessageHash(_claimer, _amount),
+            _signature
+        );
 
-        if (!success || signer == address(0)) {
+        if (err != ECDSA.RecoverError.NoError) {
             revert InvalidSignature();
         }
-        if (signer != _claimer) {
+        if (recovered != _claimer) {
             revert InvalidClaimer();
         }
 
@@ -84,5 +81,16 @@ contract MerkleAirdrop is Ownable, EIP712 {
 
         // 5. Transfer the tokens
         IERC20(airdropToken).safeTransfer(_claimer, _amount); // Use safeTransfer
+    }
+
+    function getMessageHash(
+        address _claimer,
+        uint256 _amount
+    ) public view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(CLAIM_TYPEHASH, _claimer, _amount)
+        );
+        bytes32 digest = _hashTypedDataV4(structHash);
+        return digest;
     }
 }

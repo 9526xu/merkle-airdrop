@@ -9,10 +9,7 @@ import "openzeppelin/contracts/access/Ownable.sol";
 import "openzeppelin/contracts/utils/cryptography/EIP712.sol"; // New import
 import "openzeppelin/contracts/utils/cryptography/ECDSA.sol"; // New import for ECDSA.recover
 
-contract MerkleAirdrop is
-    Ownable,
-    EIP712 // Inherit EIP712
-{
+contract MerkleAirdrop is Ownable, EIP712 {
     using SafeERC20 for IERC20; // Use SafeERC20 for IERC20
 
     bytes32 public immutable merkleRoot;
@@ -26,6 +23,8 @@ contract MerkleAirdrop is
     error InvalidSignature();
     error InvalidClaimer();
     error UnauthorizedRelayer(); // For onlyOwner check for claim function
+
+    event Claimed(address indexed claimer, uint256 amount);
 
     // Define the EIP-712 type hash for the claim
     bytes32 private constant CLAIM_TYPEHASH =
@@ -56,13 +55,15 @@ contract MerkleAirdrop is
         }
 
         // 2. Verify the EIP-712 signature
-        bytes32 structHash = keccak256(abi.encode(
-            CLAIM_TYPEHASH,
-            _claimer,
-            _amount
-        ));
+        bytes32 structHash = keccak256(
+            abi.encode(CLAIM_TYPEHASH, _claimer, _amount)
+        );
         bytes32 digest = _hashTypedDataV4(structHash);
-        (bool success, address signer) = digest.tryRecover(_signature);
+
+        // By using OpenZeppelin's ECDSA.tryRecover, we prevent signature malleability attacks.
+        // The library ensures that the 's' value of the signature is in the lower half of the curve order,
+        // accepting only canonical signatures and rejecting malleable ones.
+        (bool success, address signer) = ECDSA.tryRecover(digest, _signature);
 
         if (!success || signer == address(0)) {
             revert InvalidSignature();
@@ -77,8 +78,9 @@ contract MerkleAirdrop is
             revert InvalidMerkleProof();
         }
 
-        // 4. Mark as claimed
+        // 4. Mark as claimed and emit event
         hasClaimed[_claimer] = true;
+        emit Claimed(_claimer, _amount);
 
         // 5. Transfer the tokens
         IERC20(airdropToken).safeTransfer(_claimer, _amount); // Use safeTransfer

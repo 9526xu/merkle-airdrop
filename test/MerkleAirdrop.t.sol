@@ -67,7 +67,9 @@ contract MerkleAirdropTest is Test {
         // 4. Record initial balance
         uint256 initialClaimerBalance = airdropToken.balanceOf(claimer);
 
-        // 5. Simulate claim from the backend relayer (e.g., msg.sender is owner)
+        // 5. Expect event and simulate claim
+        vm.expectEmit(true, true, false, true);
+        emit MerkleAirdrop.Claimed(claimer, amount);
         vm.prank(owner); // Owner (relayer) calls the claim function
         airdrop.claim(claimer, amount, merkleProof, abi.encodePacked(r, s, v));
 

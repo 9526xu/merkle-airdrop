@@ -23,11 +23,11 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create frontend directory and initialize Next.js project
-- [ ] T002 [P] Install frontend dependencies (wagmi, viem, rainbowkit, tanstack-query)
-- [ ] T003 [P] Configure Tailwind CSS in `frontend/tailwind.config.ts` and `frontend/src/app/globals.css`
-- [ ] T004 [P] Setup Wagmi and RainbowKit config in `frontend/src/lib/wagmi.ts`
-- [ ] T005 [P] Create shared UI components directory `frontend/src/components/`
+- [x] T001 Create frontend directory and initialize Next.js project
+- [x] T002 [P] Install frontend dependencies (wagmi, viem, rainbowkit, tanstack-query)
+- [x] T003 [P] Configure Tailwind CSS in `frontend/tailwind.config.ts` and `frontend/src/app/globals.css`
+- [x] T004 [P] Setup Wagmi and RainbowKit config in `frontend/src/lib/wagmi.ts`
+- [x] T005 [P] Create shared UI components directory `frontend/src/components/`
 
 ---
 

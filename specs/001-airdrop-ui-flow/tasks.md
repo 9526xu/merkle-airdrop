@@ -73,11 +73,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T016 [P] [US2] Implement Phase Management logic (mock or contract read) in `frontend/src/hooks/usePhase.ts`
+- [ ] T016 [P] [US2] Implement Phase Management logic in `frontend/src/hooks/usePhase.ts` (Manage "Collection" vs "Claim" state via API/JSON, not on-chain)
 - [ ] T017 [P] [US2] Implement Merkle Tree generation utility (using merkletreejs) in `frontend/src/lib/merkle.ts`
-- [ ] T018 [US2] Create Admin Login/Auth protection wrapper in `frontend/src/components/AdminAuth.tsx`
-- [ ] T019 [US2] Create Admin Dashboard controls (Stop Collection, Update Root) in `frontend/src/components/AdminControls.tsx`
-- [ ] T020 [US2] Assemble Admin Page in `frontend/src/app/admin/page.tsx`
+- [ ] T018 [P] [US1] Define EIP-712 'Claim' type constants in `frontend/src/lib/types.ts` (Must match contract's TypeHash definition)
+- [ ] T019 [US2] Create Admin Login/Auth protection wrapper in `frontend/src/components/AdminAuth.tsx`
+- [ ] T020 [US2] Create Admin Dashboard controls (Stop Collection, Update Root) in `frontend/src/components/AdminControls.tsx`
+- [ ] T021 [US2] Assemble Admin Page in `frontend/src/app/admin/page.tsx`
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 

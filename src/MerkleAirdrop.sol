@@ -5,14 +5,16 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol"; // New import for SafeERC20
 import "@openzeppelin/contracts/utils/Address.sol"; // New import for SafeERC20
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol"; // New import for MerkleProof
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol"; // New import for EIP712
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol"; // New import for ECDSA.recover
 
-contract MerkleAirdrop is Ownable, EIP712 {
+contract MerkleAirdrop is AccessControl, EIP712 {
     using SafeERC20 for IERC20; // Use SafeERC20 for IERC20
 
-    bytes32 public immutable merkleRoot;
+    bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
+
+    bytes32 public merkleRoot;
     address public immutable airdropToken;
 
     mapping(address => bool) public hasClaimed;
@@ -22,9 +24,9 @@ contract MerkleAirdrop is Ownable, EIP712 {
     error AlreadyClaimed();
     error InvalidSignature();
     error InvalidClaimer();
-    error UnauthorizedRelayer(); // For onlyOwner check for claim function
-
+    
     event Claimed(address indexed claimer, uint256 amount);
+    event MerkleRootUpdated(bytes32 indexed newMerkleRoot);
 
     // Define the EIP-712 type hash for the claim
     bytes32 private constant CLAIM_TYPEHASH =
@@ -36,11 +38,20 @@ contract MerkleAirdrop is Ownable, EIP712 {
         string memory _name,
         string memory _version
     )
-        Ownable(msg.sender)
         EIP712(_name, _version) // Initialize EIP712
     {
         merkleRoot = _merkleRoot;
         airdropToken = _airdropToken;
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
+
+    function grantRelayerRole(address _account) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _grantRole(RELAYER_ROLE, _account);
+    }
+
+    function updateMerkleRoot(bytes32 _merkleRoot) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        merkleRoot = _merkleRoot;
+        emit MerkleRootUpdated(_merkleRoot);
     }
 
     function claim(
@@ -48,7 +59,7 @@ contract MerkleAirdrop is Ownable, EIP712 {
         uint256 _amount,
         bytes32[] calldata _merkleProof,
         bytes calldata _signature
-    ) external onlyOwner {
+    ) external onlyRole(RELAYER_ROLE) {
         // 1. Check if the user has already claimed
         if (hasClaimed[_claimer]) {
             revert AlreadyClaimed();

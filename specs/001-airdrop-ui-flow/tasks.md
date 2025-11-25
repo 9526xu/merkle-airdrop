@@ -38,10 +38,10 @@
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
 - [x] T006 [CRITICAL] Refactor `src/MerkleAirdrop.sol`: Replace `Ownable` with `AccessControl`, make `merkleRoot` mutable, add `updateMerkleRoot`, and restrict `claim` to `RELAYER_ROLE`.
-- [ ] T007 Create API client for local JSON storage in `frontend/src/lib/api.ts`
-- [ ] T008 [P] Define TypeScript interfaces for Whitelist and UserState in `frontend/src/types/index.ts`
-- [ ] T009 Create `DeployMerkleAirdrop.s.sol` script in `script/` with Role Setup (Grant DEFAULT_ADMIN to deployer, set up other roles).
-- [ ] T010 Implement `ConnectWallet` component in `frontend/src/components/ConnectWallet.tsx`
+- [x] T007 Create API client for local JSON storage in `frontend/src/lib/api.ts`
+- [x] T008 [P] Define TypeScript interfaces for Whitelist and UserState in `frontend/src/types/index.ts`
+- [x] T009 Create `DeployMerkleAirdrop.s.sol` script in `script/` with Role Setup (Grant DEFAULT_ADMIN to deployer, set up other roles).
+- [x] T010 Implement `ConnectWallet` component in `frontend/src/components/ConnectWallet.tsx`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

@@ -9,7 +9,8 @@ export interface WhitelistStatusResponse {
   proof: string[];
 }
 
-export const API_BASE_URL = '/api';
+// Plan B: Point to Express Backend
+export const API_BASE_URL = 'http://localhost:3001/api';
 
 export const api = {
   whitelist: {

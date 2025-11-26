@@ -6,12 +6,15 @@
 
 ## Summary
 
-Implement the frontend user interfaces for User Whitelist Registration and Airdrop Claiming, along with an Admin panel for phase management. This plan also covers the creation of robust deployment scripts using Foundry and OpenZeppelin AccessControl to manage the on-chain state. The frontend will be separated into a dedicated directory structure.
+Implement the frontend user interfaces for User Whitelist Registration and Airdrop Claiming, along with an Admin panel for phase management. This plan also covers the creation of robust deployment scripts using Foundry and OpenZeppelin AccessControl to manage the on-chain state.
+
+**Architecture Update (Plan B)**: The project adopts a **Unified Backend** approach. The Frontend will *not* contain internal API routes (`frontend/src/app/api`). Instead, it will communicate strictly with the existing `@backend` Express service via REST API. The `@backend` service will be expanded to manage the `whitelist.json` and Merkle Tree generation.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.x (Frontend), Solidity 0.8.20 (Contracts)
+**Language/Version**: TypeScript 5.x (Frontend), Solidity 0.8.20 (Contracts), Node.js/Express (Backend)
 **Frontend Framework**: Next.js 14 (App Router) - *Proposed for rapid development and routing capabilities*
+**Backend Framework**: Express.js (existing in `@backend`)
 **Styling**: Tailwind CSS - *Proposed for minimal, clean UI*
 **Web3 Integration**: RainbowKit + Wagmi + Viem - *Industry standard for wallet connection and contract interaction*
 **Contract Tooling**: Foundry (Forge) for deployment scripts and testing
@@ -21,6 +24,7 @@ Implement the frontend user interfaces for User Whitelist Registration and Airdr
 **Constraints**: 
 - **Minimal MVP UI**: Focus on functionality over custom aesthetics.
 - **Strict Folder Separation**: Admin and User logic must be physically separated in the file system.
+- **Unified Backend**: All data persistence (whitelist, merkle tree) happens in `@backend`.
 
 ## Constitution Check
 
@@ -55,9 +59,23 @@ frontend/                # NEW: Dedicated frontend application
 │   │   └── user/        # PUBLIC: User Whitelist/Claim routes (or root /)
 │   │       └── page.tsx
 │   ├── components/      # Shared UI components
-│   └── lib/             # Wagmi config, contract ABIs
+│   └── lib/             # Wagmi config, contract ABIs, API Client (calls localhost:3001)
 ├── package.json
 └── ...
+
+backend/                 # EXISTING: Express Server (Port 3001)
+├── data/                # NEW: Application Data Storage
+│   └── whitelist.json   # Dynamic whitelist data (User Registration)
+├── src/
+│   ├── api/             # API Routes
+│   │   ├── claim.ts     # Existing Relayer
+│   │   └── whitelist.ts # NEW: Whitelist Management
+│   ├── index.ts         # App Entry
+│   ├── services/        # Business Logic
+│   └── utils/           # Shared Utilities
+│       └── merkle.ts    # NEW: Shared Merkle Tree Generation Logic
+└── scripts/             # Script utilities
+    └── generate-merkle-tree.js # Script to process data/whitelist.json -> merkle-tree.json (uses utils/merkle.ts)
 
 script/                  # EXISTING: Foundry scripts
 ├── DeployMerkleAirdrop.s.sol # NEW: Deployment & Setup script
@@ -98,5 +116,11 @@ script/                  # EXISTING: Foundry scripts
 - Implement `DeployMerkleAirdrop.s.sol`.
 - Build "Connect Wallet" wrapper.
 - Build **User Flow**: Whitelist Form -> Status Check -> Claim Button.
+  - *Backend*: Create `backend/data/` directory.
+  - *Backend*: Implement `/whitelist` routes in Express (Reading/Writing `backend/data/whitelist.json`).
+  - *Frontend*: Consume Express API.
 - Build **Admin Flow**: Phase Switcher -> Root Updater.
+  - *Backend*: Implement shared `MerkleGenerator` class in `backend/src/utils/merkle.ts`.
+  - *Backend*: Refactor `generate-merkle-tree.js` to import `MerkleGenerator` (via ts-node or build).
+  - *Backend*: Implement Merkle generation endpoint in `backend/src/api/admin.ts` using `MerkleGenerator`.
 - Integrate Backend API (whitelist.json read/write).

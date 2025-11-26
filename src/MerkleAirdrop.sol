@@ -33,14 +33,12 @@ contract MerkleAirdrop is AccessControl, EIP712 {
         keccak256("Claim(address claimer,uint256 amount)");
 
     constructor(
-        bytes32 _merkleRoot,
         address _airdropToken,
         string memory _name,
         string memory _version
     )
         EIP712(_name, _version) // Initialize EIP712
     {
-        merkleRoot = _merkleRoot;
         airdropToken = _airdropToken;
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }

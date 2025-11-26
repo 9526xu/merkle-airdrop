@@ -20,7 +20,6 @@ contract DeployMerkleAirdrop is Script {
 
         // Deploy Airdrop Contract
         MerkleAirdrop airdrop = new MerkleAirdrop(
-            ROOT,
             address(airdropToken),
             "Airdrop",
             "1"

@@ -36,11 +36,13 @@ contract MerkleAirdropTest is Test {
 
         vm.prank(owner);
         airdrop = new MerkleAirdrop(
-            MERKLE_ROOT,
             address(airdropToken),
             NAME,
             VERSION
         );
+
+        vm.prank(owner);
+        airdrop.updateMerkleRoot(MERKLE_ROOT);
 
         // Grant RELAYER_ROLE to relayer using the new method
         vm.prank(owner);

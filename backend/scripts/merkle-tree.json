@@ -1,28 +1,10 @@
 {
-  "merkleRoot": "0x65caba9ac8f81786589c59b27b31c7f461471552481c71ae9bb21a50d6cc8bec",
+  "merkleRoot": "0x4a364aaf0c7623c0a91640665a1f8c4c99f82109db09bcfb37fd42ff9003026d",
   "airdropData": [
     {
-      "address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-      "amount": "100000000000000000000",
-      "proof": [
-        "0x7602bd89cdc861ef544e52daf876d2eba38424ec3d4a443febdc56312fed9d5a",
-        "0x89b67bb595b295fa17063ff9ce340a697d6d6811070f9305d9d57fa907aa6037"
-      ]
-    },
-    {
-      "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
-      "amount": "200000000000000000000",
-      "proof": [
-        "0x271e61abd8219c77862fda17c0c094302fa9884962394db34da950745db9fbbb",
-        "0x89b67bb595b295fa17063ff9ce340a697d6d6811070f9305d9d57fa907aa6037"
-      ]
-    },
-    {
-      "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
-      "amount": "300000000000000000000",
-      "proof": [
-        "0x95c3b22eed7cce4d0563af3522bbb76c26099b1e081419b9877062ec043757ec"
-      ]
+      "address": "0xDbAb90d3A468E25ed69F54D0850d492F3C6649BD",
+      "amount": "935",
+      "proof": []
     }
   ]
 }

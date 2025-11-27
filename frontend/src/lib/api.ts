@@ -35,4 +35,58 @@ export const api = {
       return response.json();
     },
   },
+  admin: {
+    getStatus: async (): Promise<{ status: 'COLLECTION' | 'PROCESSING' | 'CLAIM' }> => {
+      const response = await fetch(`${API_BASE_URL}/admin/status`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch status');
+      }
+      return response.json();
+    },
+    updateStatus: async (status: 'COLLECTION' | 'PROCESSING' | 'CLAIM', password: string): Promise<{ status: 'COLLECTION' | 'PROCESSING' | 'CLAIM' }> => {
+      const response = await fetch(`${API_BASE_URL}/admin/status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password,
+        },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update status');
+      }
+      return response.json();
+    },
+    generateTree: async (password: string): Promise<{ success: boolean; merkleRoot: string; count: number }> => {
+      const response = await fetch(`${API_BASE_URL}/admin/generate-tree`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate tree');
+      }
+      return response.json();
+    },
+  },
+  claim: {
+    submit: async (claimer: string, amount: string, proof: string[], signature: string): Promise<{ transactionHash: string }> => {
+      const response = await fetch(`${API_BASE_URL}/claim`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ claimer, amount, merkleProof: proof, signature }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to claim');
+      }
+      return response.json();
+    },
+  },
 };

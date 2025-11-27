@@ -119,7 +119,8 @@ script/                  # EXISTING: Foundry scripts
   - *Backend*: Create `backend/data/` directory.
   - *Backend*: Implement `/whitelist` routes in Express (Reading/Writing `backend/data/whitelist.json`).
   - *Frontend*: Consume Express API.
-- Build **Admin Flow**: Phase Switcher -> Root Updater.
+- Build **Admin Flow**: Phase Switcher (COLLECTION -> PROCESSING -> CLAIM) -> Root Updater.
+  - *Note*: "PROCESSING" phase freezes the whitelist to allow safe Merkle Tree generation before enabling Claims.
   - *Backend*: Implement shared `MerkleGenerator` class in `backend/src/utils/merkle.ts`.
   - *Backend*: Refactor `generate-merkle-tree.js` to import `MerkleGenerator` (via ts-node or build).
   - *Backend*: Implement Merkle generation endpoint in `backend/src/api/admin.ts` using `MerkleGenerator`.

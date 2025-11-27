@@ -1,23 +1,32 @@
 import { ethers } from "ethers";
+import fs from 'fs';
+import path from 'path';
 import MerkleAirdrop from "../../../out/MerkleAirdrop.sol/MerkleAirdrop.json";
-import merkleTree from "../../scripts/merkle-tree.json";
 import logger from "../utils/logger";
 
-const AIRDROP_CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Replace with your deployed contract address
+const AIRDROP_CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 const relayerPrivateKey = process.env.RELAYER_PRIVATE_KEY;
+const merkleTreePath = path.join(__dirname, "../../scripts/merkle-tree.json");
 
 if (!relayerPrivateKey) {
   logger.error("RELAYER_PRIVATE_KEY environment variable not set");
   throw new Error("RELAYER_PRIVATE_KEY environment variable not set");
 }
 
-const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545"); // Replace with your provider
+const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
 const relayerWallet = new ethers.Wallet(relayerPrivateKey, provider);
 const airdropContract = new ethers.Contract(
   AIRDROP_CONTRACT_ADDRESS,
   MerkleAirdrop.abi,
   relayerWallet
 );
+
+const getMerkleData = () => {
+  if (!fs.existsSync(merkleTreePath)) {
+    throw new Error("Merkle tree not generated yet.");
+  }
+  return JSON.parse(fs.readFileSync(merkleTreePath, "utf8"));
+};
 
 export const relayClaim = async (
   claimer: string,
@@ -28,8 +37,10 @@ export const relayClaim = async (
   const context = { claimer, amount };
   try {
     logger.info("Checking whitelist status", context);
+    const merkleTree = getMerkleData();
+    
     const isWhitelisted = merkleTree.airdropData.some(
-      (entry) => entry.address.toLowerCase() === claimer.toLowerCase()
+      (entry: any) => entry.address.toLowerCase() === claimer.toLowerCase()
     );
 
     if (!isWhitelisted) {
@@ -50,11 +61,12 @@ export const relayClaim = async (
       amount,
       merkleProof,
       signature,
-      { gasLimit: 300000 }
+      { gasLimit: 500000 } 
     );
     return tx;
-  } catch (error: any) {
-    logger.error("Error relaying claim", { ...context, error: error.message });
-    throw new Error("Failed to relay claim transaction.");
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error("Error relaying claim", { ...context, error: errorMessage });
+    throw error; // Re-throw to be handled by the controller
   }
 };

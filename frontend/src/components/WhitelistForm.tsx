@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAccount } from 'wagmi';
 import { api } from '../lib/api';
 
@@ -11,7 +11,7 @@ export default function WhitelistForm() {
   const [appStatus, setAppStatus] = useState<'COLLECTION' | 'PROCESSING' | 'CLAIM' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStatus = async () => {
+  const fetchStatus = useCallback(async () => {
     if (!address) return;
     try {
       const data = await api.whitelist.status(address);
@@ -19,16 +19,16 @@ export default function WhitelistForm() {
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [address]);
 
-  const fetchAppStatus = async () => {
+  const fetchAppStatus = useCallback(async () => {
     try {
       const data = await api.admin.getStatus();
       setAppStatus(data.status);
     } catch (err) {
       console.error(err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAppStatus();
@@ -37,7 +37,7 @@ export default function WhitelistForm() {
     } else {
       setStatus(null);
     }
-  }, [address, isConnected]);
+  }, [address, isConnected, fetchStatus, fetchAppStatus]);
 
   const handleJoin = async () => {
     if (!address) return;
@@ -54,43 +54,61 @@ export default function WhitelistForm() {
     }
   };
 
-  if (!isConnected) {
-    return <div className="text-center p-4">Please connect your wallet to join the whitelist.</div>;
-  }
-
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-4 text-gray-900">Whitelist Registration</h2>
-      
-      {status?.isWhitelisted ? (
-        <div className="bg-green-100 text-green-800 p-4 rounded mb-4">
-          <p className="font-bold">You are whitelisted!</p>
-          <p>Allocation: {status.allocation} Tokens</p>
+    <div className="bg-slate-900/50 p-8 h-full flex flex-col justify-between">
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white">Whitelist</h2>
+          <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+             appStatus === 'COLLECTION' ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/50' : 'bg-slate-700 text-slate-400'
+          }`}>
+            {appStatus === 'COLLECTION' ? 'Active' : 'Closed'}
+          </div>
         </div>
-      ) : (
-        <div>
-          {appStatus === 'COLLECTION' ? (
-            <>
-                <p className="mb-4 text-gray-600">Join the whitelist to be eligible for the airdrop.</p>
-                <button
-                    onClick={handleJoin}
-                    disabled={isLoading}
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:bg-blue-300 transition-colors"
-                >
-                    {isLoading ? 'Joining...' : 'Join Whitelist'}
-                </button>
-            </>
-          ) : (
-            <div className="bg-gray-100 text-gray-600 p-4 rounded">
-                <p className="font-bold">Registration Closed</p>
-                <p className="text-sm">The airdrop is currently in {appStatus} phase.</p>
+
+        {!isConnected ? (
+            <div className="text-center py-8 border-2 border-dashed border-slate-700 rounded-xl bg-slate-800/30">
+                <p className="text-slate-400 mb-2">Wallet not connected</p>
+                <p className="text-sm text-slate-500">Please connect your wallet to register.</p>
             </div>
-          )}
-        </div>
-      )}
+        ) : (
+            <div className="space-y-6">
+                {status?.isWhitelisted ? (
+                    <div className="bg-green-500/10 border border-green-500/20 p-6 rounded-xl text-center">
+                        <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6 text-green-500">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                        </div>
+                        <p className="font-bold text-green-400 text-lg">Successfully Registered!</p>
+                        <p className="text-slate-400 text-sm mt-1">Allocation: <span className="text-white font-mono">{status.allocation} Tokens</span></p>
+                    </div>
+                ) : (
+                    <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
+                        <p className="text-slate-300 mb-4">Join the exclusive whitelist to secure your airdrop allocation. Spots are limited.</p>
+                        
+                        {appStatus === 'COLLECTION' ? (
+                            <button
+                                onClick={handleJoin}
+                                disabled={isLoading}
+                                className="w-full btn-primary relative overflow-hidden group"
+                            >
+                                <span className="relative z-10">{isLoading ? 'Processing...' : 'Join Whitelist'}</span>
+                                {!isLoading && <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>}
+                            </button>
+                        ) : (
+                             <button disabled className="w-full btn-secondary opacity-50 cursor-not-allowed">
+                                Registration Closed
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
+        )}
+      </div>
 
       {error && (
-        <div className="mt-4 bg-red-100 text-red-800 p-3 rounded">
+        <div className="mt-4 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded text-sm">
           {error}
         </div>
       )}

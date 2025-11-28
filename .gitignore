@@ -132,3 +132,5 @@ out/
 
 # Backend Runtime Data
 backend/data/*.json
+.gemini/
+gha-creds-*.json

@@ -132,4 +132,3 @@ out/
 
 # Backend Runtime Data
 backend/data/*.json
-!backend/data/.gitkeep

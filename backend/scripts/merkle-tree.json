@@ -1,10 +1,19 @@
 {
-  "merkleRoot": "0x4a364aaf0c7623c0a91640665a1f8c4c99f82109db09bcfb37fd42ff9003026d",
+  "merkleRoot": "0xfc352c945814707a96d58c3eb26ad4f618b74e7c3c597a4148b5dffd37883d96",
   "airdropData": [
     {
       "address": "0xDbAb90d3A468E25ed69F54D0850d492F3C6649BD",
       "amount": "935",
-      "proof": []
+      "proof": [
+        "0xead98a975e9d95e7999fd1c2e4b3bc3af7520b39b8c9861fc549d787a5eff84a"
+      ]
+    },
+    {
+      "address": "0x68dE931463b6E7B027e460FA7C23197F0bfc8B07",
+      "amount": "118",
+      "proof": [
+        "0x4a364aaf0c7623c0a91640665a1f8c4c99f82109db09bcfb37fd42ff9003026d"
+      ]
     }
   ]
 }

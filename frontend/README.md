@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Merkle Airdrop Frontend
 
-## Getting Started
-
-First, run the development server:
+### Getting Started
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000` in the browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `NEXT_PUBLIC_AIRDROP_CONTRACT_ADDRESS`: Airdrop contract address (e.g. Anvil or testnet)
 
-## Learn More
+Build notes:
 
-To learn more about Next.js, take a look at the following resources:
+- Next.js SSR stubs `@react-native-async-storage/async-storage` via webpack alias in `next.config.ts`.
+- Non-browser externals (e.g. `pino-pretty`, `lokijs`) are excluded to prevent SSR build errors.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Workflow Overview
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Collection: users register to whitelist.
+2. Processing: admin freezes whitelist and generates Merkle tree, then updates on-chain root.
+3. Claim: users claim tokens using off-chain signature and Merkle proof.
 
-## Deploy on Vercel
+### Backend Configuration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `MERKLE_OUTPUT_DIR`: directory for `whitelist.json` and `merkle-tree.json` (default: `backend/data`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Testing
+
+- Backend tests can be run from `backend/` with `npm test`.
+- Includes unit test verifying whitelist status returns Merkle proof when available.

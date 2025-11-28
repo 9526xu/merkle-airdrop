@@ -34,4 +34,20 @@ describe("POST /api/claim", () => {
     expect(response.status).toBe(400);
     expect(response.body).toEqual({ error: "Missing required claim data." });
   });
+
+  it("should surface contract not deployed error", async () => {
+    const mod = require("../src/services/claimService");
+    mod.relayClaim.mockRejectedValueOnce(new Error("Airdrop contract not deployed at configured address"));
+
+    const claimData = {
+      claimer: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      amount: "100",
+      merkleProof: ["0x" + "0".repeat(64)],
+      signature: "0x" + "2".repeat(128),
+    };
+
+    const response = await request(app).post("/api/claim").send(claimData);
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({ error: "Airdrop contract not deployed at configured address" });
+  });
 });

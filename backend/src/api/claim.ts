@@ -34,6 +34,9 @@ router.post("/claim", async (req: Request, res: Response) => {
     res.status(200).json({ transactionHash: txResponse.hash });
   } catch (error: any) {
     logger.error("Failed to process claim", { ...context, error: error.message });
+    if (error.message.includes("Airdrop contract not deployed")) {
+      return res.status(500).json({ error: "Airdrop contract not deployed at configured address" });
+    }
     if (error.message.includes("User is not in the whitelist")) {
       return res.status(403).json({ error: "User is not in the whitelist." });
     }

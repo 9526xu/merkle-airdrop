@@ -5,8 +5,19 @@ import { MerkleGenerator, WhitelistEntry } from '../utils/merkle';
 import { getSettings, saveSettings } from '../utils/settings';
 
 const router = Router();
-const whitelistPath = path.join(__dirname, '../../data/whitelist.json');
-const merkleTreePath = path.join(__dirname, '../../scripts/merkle-tree.json');
+
+const outputDir = process.env.MERKLE_OUTPUT_DIR || 'data';
+const resolvedOutputDir = path.isAbsolute(outputDir) 
+  ? outputDir 
+  : path.join(__dirname, '../../', outputDir);
+
+// Ensure output directory exists
+if (!fs.existsSync(resolvedOutputDir)) {
+  fs.mkdirSync(resolvedOutputDir, { recursive: true });
+}
+
+const whitelistPath = path.join(resolvedOutputDir, 'whitelist.json');
+const merkleTreePath = path.join(resolvedOutputDir, 'merkle-tree.json');
 
 // Middleware for admin auth
 const checkAdmin = (req: Request, res: Response, next: Function) => {

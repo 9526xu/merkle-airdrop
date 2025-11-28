@@ -6,8 +6,15 @@ import { Mutex } from 'async-mutex';
 import { getSettings } from '../utils/settings';
 
 const router = Router();
-const whitelistPath = path.join(__dirname, '../../data/whitelist.json');
 const mutex = new Mutex();
+
+const outputDir = process.env.MERKLE_OUTPUT_DIR || 'data';
+const resolvedOutputDir = path.isAbsolute(outputDir) 
+  ? outputDir 
+  : path.join(__dirname, '../../', outputDir);
+
+const whitelistPath = path.join(resolvedOutputDir, 'whitelist.json');
+const merkleTreePath = path.join(resolvedOutputDir, 'merkle-tree.json');
 
 const readWhitelist = async (): Promise<any[]> => {
   if (!existsSync(whitelistPath)) {
@@ -18,6 +25,10 @@ const readWhitelist = async (): Promise<any[]> => {
 };
 
 const writeWhitelist = async (data: any[]) => {
+  // Ensure dir exists
+  if (!existsSync(resolvedOutputDir)) {
+     await fs.mkdir(resolvedOutputDir, { recursive: true });
+  }
   await fs.writeFile(whitelistPath, JSON.stringify(data, null, 2));
 };
 
@@ -67,18 +78,23 @@ router.get('/status', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Address is required' });
   }
   
-  // Reading doesn't strictly need a lock if we accept eventual consistency,
-  // but using one ensures we don't read a partially written file (though writeFile is atomic-ish on POSIX)
-  // For high throughput, we might skip the lock for reads or use a ReadWriteLock.
-  // For now, simple read is fine without lock or with lock. 
-  // Let's use standard async read without lock for speed, assuming atomic writes.
   try {
     const whitelist = await readWhitelist();
     // Case-insensitive check
     const entry = whitelist.find((e: any) => e.address.toLowerCase() === address.toLowerCase());
     
     if (entry) {
-      res.json({ isWhitelisted: true, allocation: entry.amount });
+      let proof = undefined;
+      // Check for merkle tree if it exists to get the proof
+      if (existsSync(merkleTreePath)) {
+          const treeData = JSON.parse(await fs.readFile(merkleTreePath, 'utf8'));
+          const airdropEntry = treeData.airdropData.find((e: any) => e.address.toLowerCase() === address.toLowerCase());
+          if (airdropEntry) {
+              proof = airdropEntry.proof;
+          }
+      }
+
+      res.json({ isWhitelisted: true, allocation: entry.amount, proof });
     } else {
       res.json({ isWhitelisted: false, allocation: null });
     }

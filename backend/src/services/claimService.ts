@@ -4,13 +4,18 @@ import path from 'path';
 import MerkleAirdrop from "../../../out/MerkleAirdrop.sol/MerkleAirdrop.json";
 import logger from "../utils/logger";
 
-const AIRDROP_CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const AIRDROP_CONTRACT_ADDRESS = process.env.AIRDROP_CONTRACT_ADDRESS;
 const relayerPrivateKey = process.env.RELAYER_PRIVATE_KEY;
 const merkleTreePath = path.join(__dirname, "../../scripts/merkle-tree.json");
 
 if (!relayerPrivateKey) {
   logger.error("RELAYER_PRIVATE_KEY environment variable not set");
   throw new Error("RELAYER_PRIVATE_KEY environment variable not set");
+}
+
+if (!AIRDROP_CONTRACT_ADDRESS) {
+  logger.error("AIRDROP_CONTRACT_ADDRESS environment variable not set");
+  throw new Error("AIRDROP_CONTRACT_ADDRESS environment variable not set");
 }
 
 const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
@@ -36,6 +41,11 @@ export const relayClaim = async (
 ): Promise<ethers.providers.TransactionResponse> => {
   const context = { claimer, amount };
   try {
+    const code = await provider.getCode(AIRDROP_CONTRACT_ADDRESS as string);
+    if (code === '0x') {
+      logger.error("Airdrop contract not deployed at configured address", context);
+      throw new Error("Airdrop contract not deployed at configured address");
+    }
     logger.info("Checking whitelist status", context);
     const merkleTree = getMerkleData();
     

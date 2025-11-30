@@ -19,11 +19,7 @@ contract DeployMerkleAirdrop is Script {
         console.log("AirdropToken deployed at:", address(airdropToken));
 
         // Deploy Airdrop Contract
-        MerkleAirdrop airdrop = new MerkleAirdrop(
-            address(airdropToken),
-            "Airdrop",
-            "1"
-        );
+        MerkleAirdrop airdrop = new MerkleAirdrop(address(airdropToken), "Airdrop", "1");
         console.log("MerkleAirdrop deployed at:", address(airdrop));
 
         // Mint tokens to Airdrop contract

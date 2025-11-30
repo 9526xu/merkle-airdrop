@@ -27,7 +27,7 @@ contract MerkleAirdropTest is Test {
     function setUp() public virtual {
         owner = address(this);
         relayer = address(this); // For simplicity in tests, owner is also relayer
-        
+
         vm.prank(owner);
         airdropToken = new AirdropToken("Airdrop Token", "ADT");
 
@@ -35,11 +35,7 @@ contract MerkleAirdropTest is Test {
         MERKLE_ROOT = vm.parseJsonBytes32(json, ".merkleRoot");
 
         vm.prank(owner);
-        airdrop = new MerkleAirdrop(
-            address(airdropToken),
-            NAME,
-            VERSION
-        );
+        airdrop = new MerkleAirdrop(address(airdropToken), NAME, VERSION);
 
         vm.prank(owner);
         airdrop.updateMerkleRoot(MERKLE_ROOT);
@@ -53,10 +49,7 @@ contract MerkleAirdropTest is Test {
         string memory json = vm.readFile("./backend/scripts/merkle-tree.json");
         address claimer = vm.parseJsonAddress(json, ".airdropData[0].address");
         uint256 amount = vm.parseJsonUint(json, ".airdropData[0].amount");
-        bytes32[] memory merkleProof = vm.parseJsonBytes32Array(
-            json,
-            ".airdropData[0].proof"
-        );
+        bytes32[] memory merkleProof = vm.parseJsonBytes32Array(json, ".airdropData[0].proof");
 
         airdropToken.mint(address(airdrop), 100 ether);
 
@@ -69,15 +62,11 @@ contract MerkleAirdropTest is Test {
 
         vm.expectEmit(true, true, false, true);
         emit MerkleAirdrop.Claimed(claimer, amount);
-        
+
         vm.prank(relayer);
         airdrop.claim(claimer, amount, merkleProof, abi.encodePacked(r, s, v));
 
-        assertEq(
-            airdropToken.balanceOf(claimer),
-            initialClaimerBalance + amount,
-            "Claimer did not receive tokens"
-        );
+        assertEq(airdropToken.balanceOf(claimer), initialClaimerBalance + amount, "Claimer did not receive tokens");
         assertTrue(airdrop.hasClaimed(claimer), "Claimer status not updated");
     }
 
@@ -92,32 +81,17 @@ contract MerkleAirdropTest is Test {
 
         vm.prank(relayer);
         vm.expectRevert(MerkleAirdrop.InvalidMerkleProof.selector);
-        airdrop.claim(
-            nonWhitelistedUser,
-            amount,
-            invalidMerkleProof,
-            abi.encodePacked(r, s, v)
-        );
+        airdrop.claim(nonWhitelistedUser, amount, invalidMerkleProof, abi.encodePacked(r, s, v));
 
-        assertEq(
-            airdropToken.balanceOf(nonWhitelistedUser),
-            0,
-            "Non-whitelisted user received tokens"
-        );
-        assertFalse(
-            airdrop.hasClaimed(nonWhitelistedUser),
-            "Non-whitelisted user status updated"
-        );
+        assertEq(airdropToken.balanceOf(nonWhitelistedUser), 0, "Non-whitelisted user received tokens");
+        assertFalse(airdrop.hasClaimed(nonWhitelistedUser), "Non-whitelisted user status updated");
     }
 
     function test_claim_fails_on_duplicate_claim() public {
         string memory json = vm.readFile("./backend/scripts/merkle-tree.json");
         address claimer = vm.parseJsonAddress(json, ".airdropData[0].address");
         uint256 amount = vm.parseJsonUint(json, ".airdropData[0].amount");
-        bytes32[] memory merkleProof = vm.parseJsonBytes32Array(
-            json,
-            ".airdropData[0].proof"
-        );
+        bytes32[] memory merkleProof = vm.parseJsonBytes32Array(json, ".airdropData[0].proof");
 
         airdropToken.mint(address(airdrop), 200 ether);
 
@@ -139,10 +113,7 @@ contract MerkleAirdropTest is Test {
         string memory json = vm.readFile("./backend/scripts/merkle-tree.json");
         address claimer = vm.parseJsonAddress(json, ".airdropData[0].address");
         uint256 amount = vm.parseJsonUint(json, ".airdropData[0].amount");
-        bytes32[] memory merkleProof = vm.parseJsonBytes32Array(
-            json,
-            ".airdropData[0].proof"
-        );
+        bytes32[] memory merkleProof = vm.parseJsonBytes32Array(json, ".airdropData[0].proof");
 
         airdropToken.mint(address(airdrop), 100 ether);
 
@@ -161,10 +132,7 @@ contract MerkleAirdropTest is Test {
         string memory json = vm.readFile("./backend/scripts/merkle-tree.json");
         address claimer = vm.parseJsonAddress(json, ".airdropData[0].address");
         uint256 amount = vm.parseJsonUint(json, ".airdropData[0].amount");
-        bytes32[] memory merkleProof = vm.parseJsonBytes32Array(
-            json,
-            ".airdropData[0].proof"
-        );
+        bytes32[] memory merkleProof = vm.parseJsonBytes32Array(json, ".airdropData[0].proof");
 
         airdropToken.mint(address(airdrop), 100 ether);
 
@@ -183,23 +151,21 @@ contract MerkleAirdropTest is Test {
 
     function test_updateMerkleRoot_success() public {
         bytes32 newMerkleRoot = keccak256("newMerkleRoot");
-        
+
         vm.prank(owner); // owner has DEFAULT_ADMIN_ROLE
         airdrop.updateMerkleRoot(newMerkleRoot);
-        
+
         assertEq(airdrop.merkleRoot(), newMerkleRoot);
     }
 
     function test_updateMerkleRoot_fails_if_not_admin() public {
         bytes32 newMerkleRoot = keccak256("newMerkleRoot");
         address nonAdmin = vm.addr(2);
-        
+
         vm.prank(nonAdmin);
         vm.expectRevert(
             abi.encodeWithSelector(
-                IAccessControl.AccessControlUnauthorizedAccount.selector,
-                nonAdmin,
-                DEFAULT_ADMIN_ROLE
+                IAccessControl.AccessControlUnauthorizedAccount.selector, nonAdmin, DEFAULT_ADMIN_ROLE
             )
         );
         airdrop.updateMerkleRoot(newMerkleRoot);
@@ -209,10 +175,7 @@ contract MerkleAirdropTest is Test {
         string memory json = vm.readFile("./backend/scripts/merkle-tree.json");
         address claimer = vm.parseJsonAddress(json, ".airdropData[0].address");
         uint256 amount = vm.parseJsonUint(json, ".airdropData[0].amount");
-        bytes32[] memory merkleProof = vm.parseJsonBytes32Array(
-            json,
-            ".airdropData[0].proof"
-        );
+        bytes32[] memory merkleProof = vm.parseJsonBytes32Array(json, ".airdropData[0].proof");
 
         bytes32 digest = airdrop.getMessageHash(claimer, amount);
         uint256 claimerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
@@ -223,11 +186,7 @@ contract MerkleAirdropTest is Test {
 
         vm.prank(nonRelayer);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                IAccessControl.AccessControlUnauthorizedAccount.selector,
-                nonRelayer,
-                RELAYER_ROLE
-            )
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, nonRelayer, RELAYER_ROLE)
         );
         airdrop.claim(claimer, amount, merkleProof, signature);
     }

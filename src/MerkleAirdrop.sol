@@ -24,20 +24,16 @@ contract MerkleAirdrop is AccessControl, EIP712 {
     error AlreadyClaimed();
     error InvalidSignature();
     error InvalidClaimer();
-    
+
     event Claimed(address indexed claimer, uint256 amount);
     event MerkleRootUpdated(bytes32 indexed newMerkleRoot);
 
     // Define the EIP-712 type hash for the claim
-    bytes32 private constant CLAIM_TYPEHASH =
-        keccak256("Claim(address claimer,uint256 amount)");
+    bytes32 private constant CLAIM_TYPEHASH = keccak256("Claim(address claimer,uint256 amount)");
 
-    constructor(
-        address _airdropToken,
-        string memory _name,
-        string memory _version
-    )
+    constructor(address _airdropToken, string memory _name, string memory _version)
         EIP712(_name, _version) // Initialize EIP712
+
     {
         airdropToken = _airdropToken;
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -52,12 +48,10 @@ contract MerkleAirdrop is AccessControl, EIP712 {
         emit MerkleRootUpdated(_merkleRoot);
     }
 
-    function claim(
-        address _claimer,
-        uint256 _amount,
-        bytes32[] calldata _merkleProof,
-        bytes calldata _signature
-    ) external onlyRole(RELAYER_ROLE) {
+    function claim(address _claimer, uint256 _amount, bytes32[] calldata _merkleProof, bytes calldata _signature)
+        external
+        onlyRole(RELAYER_ROLE)
+    {
         // 1. Check if the user has already claimed
         if (hasClaimed[_claimer]) {
             revert AlreadyClaimed();
@@ -66,10 +60,7 @@ contract MerkleAirdrop is AccessControl, EIP712 {
         // By using OpenZeppelin's ECDSA.tryRecover, we prevent signature malleability attacks.
         // The library ensures that the 's' value of the signature is in the lower half of the curve order,
         // accepting only canonical signatures and rejecting malleable ones.
-        (address recovered, ECDSA.RecoverError err, ) = ECDSA.tryRecover(
-            getMessageHash(_claimer, _amount),
-            _signature
-        );
+        (address recovered, ECDSA.RecoverError err,) = ECDSA.tryRecover(getMessageHash(_claimer, _amount), _signature);
 
         if (err != ECDSA.RecoverError.NoError) {
             revert InvalidSignature();
@@ -92,13 +83,8 @@ contract MerkleAirdrop is AccessControl, EIP712 {
         IERC20(airdropToken).safeTransfer(_claimer, _amount); // Use safeTransfer
     }
 
-    function getMessageHash(
-        address _claimer,
-        uint256 _amount
-    ) public view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(CLAIM_TYPEHASH, _claimer, _amount)
-        );
+    function getMessageHash(address _claimer, uint256 _amount) public view returns (bytes32) {
+        bytes32 structHash = keccak256(abi.encode(CLAIM_TYPEHASH, _claimer, _amount));
         bytes32 digest = _hashTypedDataV4(structHash);
         return digest;
     }

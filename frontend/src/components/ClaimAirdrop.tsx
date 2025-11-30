@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useSignTypedData } from 'wagmi';
+import { useAccount, useSignTypedData, useChainId } from 'wagmi';
 import { api } from '../lib/api';
-
-// TODO: Move to config
-const AIRDROP_ADDRESS = process.env.NEXT_PUBLIC_AIRDROP_CONTRACT_ADDRESS as `0x${string}`;
-const CHAIN_ID = 31337; // Anvil
+import { getChain, getAirdropAddress } from '../lib/chains';
 
 export default function ClaimAirdrop() {
   const { address, isConnected } = useAccount();
   const { signTypedDataAsync } = useSignTypedData();
+  const chainId = useChainId();
+  const chain = getChain(chainId);
+  const airdropAddress = (getAirdropAddress(chainId) ?? process.env.NEXT_PUBLIC_AIRDROP_CONTRACT_ADDRESS) as `0x${string}`;
   
   const [status, setStatus] = useState<{ isWhitelisted: boolean; allocation: string | null; proof?: string[] } | null>(null);
   const [appStatus, setAppStatus] = useState<'COLLECTION' | 'PROCESSING' | 'CLAIM' | null>(null);
@@ -39,8 +39,8 @@ export default function ClaimAirdrop() {
             domain: {
                 name: 'Airdrop',
                 version: '1',
-                chainId: CHAIN_ID,
-                verifyingContract: AIRDROP_ADDRESS,
+                chainId: chainId,
+                verifyingContract: airdropAddress,
             },
             types: {
                 Claim: [
@@ -149,9 +149,13 @@ export default function ClaimAirdrop() {
         {txHash && (
             <div className="mt-4 bg-green-500/10 border border-green-500/20 text-green-400 p-3 rounded break-all text-sm">
                 <p className="font-bold mb-1">Success!</p>
-                <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-green-300">
-                    View on Etherscan
-                </a>
+                {chain?.explorerTxUrl ? (
+                  <a href={chain.explorerTxUrl(txHash)} target="_blank" rel="noopener noreferrer" className="underline hover:text-green-300">
+                    View on Explorer
+                  </a>
+                ) : (
+                  <span>{txHash}</span>
+                )}
             </div>
         )}
     </div>

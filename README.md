@@ -87,7 +87,7 @@ App runs on `http://localhost:3000`.
 
 1.  **User Registration** (Status: `COLLECTION`):
     - Go to `http://localhost:3000/user`.
-    - Connect Wallet (Use Anvil Account #1, #2, etc.).
+    - Connect Wallet (Use Anvil Account #1, #2, etc. or Sepolia).
     - Click "Join Whitelist".
 
 2.  **Admin Processing**:
@@ -95,15 +95,22 @@ App runs on `http://localhost:3000`.
     - Login with password: `admin123`.
     - **Phase 1**: Click "PROCESSING" to stop new registrations.
     - **Phase 2**: Click "Generate Merkle Tree" (creates proof off-chain).
-    - **Phase 3**: Click "Update Contract Root" (sends transaction on-chain).
+    - **Phase 3**: Check "Consistency Check" panel. If Not Synced, Click "Update Contract Root" (sends transaction on-chain).
     - **Phase 4**: Click "CLAIM" to enable user claims.
 
 3.  **User Claim** (Status: `CLAIM`):
     - Go back to `http://localhost:3000/user`.
     - Refresh to see Allocation.
     - Click "Claim Tokens (Gasless)".
-    - Sign the message.
+    - Sign the message (EIP-712).
+    - **Real-time Feedback**: Watch the button state change from "Sign & Send" -> "Confirming..." -> "Tokens Claimed".
     - Success! Tokens transferred without user paying gas.
+
+## Multi-Chain Support
+
+The application supports multiple networks (e.g., Anvil Localhost, Sepolia).
+- Switch networks in your wallet, and the UI will automatically detect the chain ID.
+- Ensure `NEXT_PUBLIC_AIRDROP_CONTRACT_ADDRESS_<CHAIN_ID>` is configured in `frontend/.env.local` for each supported network.
 
 ## Development
 

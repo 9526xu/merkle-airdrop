@@ -84,4 +84,20 @@ router.post('/generate-tree', checkAdmin, async (req: Request, res: Response) =>
   }
 });
 
+router.get('/tree-info', async (req: Request, res: Response) => {
+  try {
+    if (!fs.existsSync(merkleTreePath)) {
+      return res.json({ merkleRoot: null, count: 0 });
+    }
+    const treeData = JSON.parse(fs.readFileSync(merkleTreePath, "utf8"));
+    res.json({ 
+      merkleRoot: treeData.merkleRoot, 
+      count: treeData.airdropData ? treeData.airdropData.length : 0 
+    });
+  } catch (error) {
+    console.error("Failed to fetch tree info:", error);
+    res.status(500).json({ error: "Failed to fetch tree info" });
+  }
+});
+
 export default router;

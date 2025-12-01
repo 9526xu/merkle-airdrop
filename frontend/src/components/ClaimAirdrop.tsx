@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useSignTypedData, useChainId } from 'wagmi';
+import { useAccount, useSignTypedData, useChainId, useReadContract, useWaitForTransactionReceipt } from 'wagmi';
 import { api } from '../lib/api';
 import { getChain, getAirdropAddress } from '../lib/chains';
+import { MERKLE_AIRDROP_ABI } from '../lib/abi';
 
 export default function ClaimAirdrop() {
   const { address, isConnected } = useAccount();
@@ -15,8 +16,34 @@ export default function ClaimAirdrop() {
   const [status, setStatus] = useState<{ isWhitelisted: boolean; allocation: string | null; proof?: string[] } | null>(null);
   const [appStatus, setAppStatus] = useState<'COLLECTION' | 'PROCESSING' | 'CLAIM' | null>(null);
   const [isClaiming, setIsClaiming] = useState(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if user has already claimed on-chain
+  const { data: hasClaimedOnChain, refetch: refetchClaimStatus } = useReadContract({
+    address: airdropAddress,
+    abi: MERKLE_AIRDROP_ABI,
+    functionName: 'hasClaimed',
+    args: address ? [address] : undefined,
+    query: {
+        enabled: !!address,
+    }
+  });
+
+  // Monitor transaction receipt
+  const { isLoading: isTxPending, isSuccess: isTxSuccess, isError: isTxReverted } = useWaitForTransactionReceipt({
+    hash: txHash as `0x${string}`,
+    query: {
+        enabled: !!txHash,
+    }
+  });
+
+  // Refetch claim status when transaction succeeds
+  useEffect(() => {
+    if (isTxSuccess) {
+        refetchClaimStatus();
+    }
+  }, [isTxSuccess, refetchClaimStatus]);
 
   useEffect(() => {
     api.admin.getStatus().then(data => setAppStatus(data.status)).catch(console.error);
@@ -63,7 +90,7 @@ export default function ClaimAirdrop() {
               signature
           );
 
-          setTxHash(result.transactionHash);
+          setTxHash(result.transactionHash as `0x${string}`);
       } catch (err) {
           console.error(err);
           setError(err instanceof Error ? err.message : "Failed to claim");
@@ -72,9 +99,8 @@ export default function ClaimAirdrop() {
       }
   };
 
-  // Only show claim component if whitelisted OR if we want to show "not eligible" message
-  // But let's always render the structure to keep layout consistent
-  
+  const isClaimed = hasClaimedOnChain || isTxSuccess;
+
   return (
     <div className="bg-slate-900/50 p-8 h-full flex flex-col justify-between">
         <div>
@@ -107,12 +133,12 @@ export default function ClaimAirdrop() {
                     {appStatus === 'CLAIM' && status?.proof && status.proof.length > 0 ? (
                          <button 
                             className={`w-full py-4 px-4 rounded-xl font-bold text-lg shadow-lg transition-all duration-300 ${
-                                isClaiming || txHash 
+                                isClaiming || isTxPending || isClaimed
                                 ? 'bg-green-600/20 text-green-400 cursor-default' 
                                 : 'bg-green-600 hover:bg-green-500 text-white hover:shadow-green-500/25 hover:-translate-y-1'
                             }`}
                             onClick={handleClaim}
-                            disabled={isClaiming || !!txHash}
+                            disabled={isClaiming || isTxPending || isClaimed as boolean}
                         >
                             {isClaiming ? (
                                 <span className="flex items-center justify-center gap-2">
@@ -120,14 +146,22 @@ export default function ClaimAirdrop() {
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
-                                    Processing...
+                                    Sign & Send...
                                 </span>
-                            ) : txHash ? (
+                            ) : isTxPending ? (
+                                <span className="flex items-center justify-center gap-2">
+                                     <svg className="animate-spin h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Confirming...
+                                </span>
+                            ) : isClaimed ? (
                                 <span className="flex items-center justify-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                     </svg>
-                                    Claimed
+                                    Tokens Claimed
                                 </span>
                             ) : 'Claim Tokens (Gasless)'}
                         </button>
@@ -146,9 +180,15 @@ export default function ClaimAirdrop() {
             </div>
         )}
 
+        {isTxReverted && (
+            <div className="mt-4 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded text-sm">
+               Transaction failed on-chain.
+           </div>
+        )}
+
         {txHash && (
             <div className="mt-4 bg-green-500/10 border border-green-500/20 text-green-400 p-3 rounded break-all text-sm">
-                <p className="font-bold mb-1">Success!</p>
+                <p className="font-bold mb-1">Transaction Sent!</p>
                 {chain?.explorerTxUrl ? (
                   <a href={chain.explorerTxUrl(txHash)} target="_blank" rel="noopener noreferrer" className="underline hover:text-green-300">
                     View on Explorer

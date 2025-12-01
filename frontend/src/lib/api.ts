@@ -72,6 +72,13 @@ export const api = {
       }
       return response.json();
     },
+    getTreeInfo: async (): Promise<{ merkleRoot: string | null; count: number }> => {
+      const response = await fetch(`${API_BASE_URL}/admin/tree-info`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch tree info');
+      }
+      return response.json();
+    },
   },
   claim: {
     submit: async (claimer: string, amount: string, proof: string[], signature: string): Promise<{ transactionHash: string }> => {

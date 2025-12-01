@@ -20,6 +20,7 @@ contract MerkleAirdrop is AccessControl, EIP712 {
     mapping(address => bool) public hasClaimed;
 
     // Custom Errors
+    error InvalidMerkleRoot();
     error InvalidMerkleProof();
     error AlreadyClaimed();
     error InvalidSignature();
@@ -52,6 +53,9 @@ contract MerkleAirdrop is AccessControl, EIP712 {
         external
         onlyRole(RELAYER_ROLE)
     {
+        if (merkleRoot == bytes32(0)) {
+            revert InvalidMerkleRoot();
+        }
         // 1. Check if the user has already claimed
         if (hasClaimed[_claimer]) {
             revert AlreadyClaimed();

@@ -33,6 +33,10 @@ const getMerkleData = () => {
   return JSON.parse(fs.readFileSync(merkleTreePath, "utf8"));
 };
 
+// TODO: Implement concurrency control (Nonce Management).
+// Currently, this method is susceptible to race conditions if multiple claims happen simultaneously.
+// Multiple requests might fetch the same pending nonce from the provider, causing "Nonce too low" errors.
+// Recommended fixes: In-memory Mutex (for single instance) or Redis/Queue (for distributed systems).
 export const relayClaim = async (
   claimer: string,
   amount: string,

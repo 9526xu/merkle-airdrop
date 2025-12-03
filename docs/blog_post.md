@@ -50,6 +50,8 @@ sequenceDiagram
     Frontend-->>User: 显示领取成功
 ```
 
+![](./img/gasless_airdrop_architecture.png)
+
 ## 2. 核心原理拆解 (Core Concepts)
 
 ### 链上白名单 (On-chain Whitelist)
@@ -112,9 +114,9 @@ _操作繁琐 (Admin Overhead)_
 2.  叶子节点两两配对再次哈希，向上层层递进。
 3.  最终生成一个唯一的 32 字节哈希值，称为 **Merkle Root (默克尔根)**。
 
-链上合约只要存储一个 **一个** 32 字节的 `Merkle Root`，成本是非常低的，其他所有数据都存储在链下。
+链上合约只要存储 **一个** 32 字节的 `Merkle Root`，成本是非常低的，其他所有数据都存储在链下。
 
-用户领取空投时，用户领取时，只需提供一条从叶子节点到根节点的“路径”哈希值（称为 **Merkle Proof**）。合约通过简单的哈希计算，就能验证该用户是否属于这棵树。
+用户领取空投时，只需提供一条从叶子节点到根节点的“路径”哈希值（称为 **Merkle Proof**）。合约通过简单的哈希计算，就能验证该用户是否属于这棵树。
 
 这就像是指纹验证。你不需要随身携带你的整个档案袋，只需要按一下指纹（Hash），系统比对指纹特征（Proof & Root），就能确认你的身份。
 
@@ -187,7 +189,7 @@ Amount: 100 Tokens
 Nonce: 1
 ```
 
-![Meta-Transaction](./img/EIP-712.png)
+![Meta-Transaction](./img/eip712_metamask_sign.png)
 
 #### EIP-712 合约实现 (Code Snippet)
 
@@ -206,9 +208,9 @@ function getMessageHash(address _claimer, uint256 _amount) public view returns (
     return _hashTypedDataV4(structHash);
 }
 
-function verify(bytes32 digest, bytes memory signature) public view returns (bool) {
+function verify(bytes32 digest, bytes memory signature, address claimer) public pure returns (bool) {
     // 3. 恢复签名者地址
-    return ECDSA.recover(digest, signature) == msg.sender;
+    return ECDSA.recover(digest, signature) == claimer;
 }
 ```
 
@@ -231,7 +233,7 @@ function verify(bytes32 digest, bytes memory signature) public view returns (boo
 
 **攻击场景**：
 
-![](./img/malleability.png)
+![](./img/signature_malleability_attack.png)
 
 1.  Alice 签名了一笔交易，发送给 Relayer。签名是 `Sig1`。
 2.  Mallory（攻击者）截获了 `Sig1`。
@@ -246,9 +248,9 @@ function verify(bytes32 digest, bytes memory signature) public view returns (boo
 
 解决签名可塑性的问题，有两个解决思路：
 
-1.  **强制使用椭圆曲线下半区的签名**：
-    - 当使用 OpenZeppelin 的 `ECDSA` 库时，它会自动检查 `s` 是否在 "下半部分"（即 `s <= n / 2`）。
-    - 如果 `s > n / 2`，`ECDSA.tryRecover` 会返回错误，从而防止使用 `(v, r, n - s)` 形式的签名。
+1. **强制使用椭圆曲线下半区的签名**：
+   - 当使用 OpenZeppelin 的 `ECDSA` 库时，它会自动检查 `s` 是否在 "下半部分"（即 `s <= n / 2`）。
+   - 如果 `s > n / 2`，`ECDSA.tryRecover` 会返回错误，从而防止使用 `(v, r, n - s)` 形式的签名。
 
 **❌ 危险的写法 (使用原生 `ecrecover`)**：
 
